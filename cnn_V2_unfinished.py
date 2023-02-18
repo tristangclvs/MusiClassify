@@ -93,17 +93,17 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # 1st conv layer
-    model.add(tf.keras.layers.Conv2D(16, (3, 3), activation='relu', input_shape=(132, 25, 1)))
+    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(189, 25, 1)))  # 132, 25, 1
     model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 2nd conv layer
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu'))
+    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 3rd conv layer
-    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(tf.keras.layers.Conv2D(128, (3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     model.summary()
 
     # compile the network
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.00001)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
     model.compile(optimizer=optimizer,
                   loss='sparse_categorical_crossentropy',
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
                         batch_size=32,
-                        epochs=20)
+                        epochs=30)
 
     # plot accuracy and error over the epochs
     plot_history(history)

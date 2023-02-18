@@ -15,6 +15,8 @@ import tensorflow_io as tfio
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
+from utils import predict
+
 # ======================================
 
 
@@ -93,7 +95,7 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # 1st conv layer
-    model.add(tf.keras.layers.Conv2D(16, (3, 3), activation='relu', input_shape=(132, 25, 1)))
+    model.add(tf.keras.layers.Conv2D(16, (3, 3), activation='relu', input_shape=input_shape))  # (132, 25, 1)
     model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
@@ -118,20 +120,6 @@ def build_model(input_shape, number_of_genres):
     return model
 
 
-def predict(model, X, y):
-    X = X[np.newaxis, ...]
-    prediction = model.predict(X)
-    # print(prediction[0])
-    # for i in range(len(prediction)):
-    #     print("Genre: {}, Percentage: {}%".format(data_global["mapping"], prediction[i] * 100))
-
-    # get the index with the maximum value from the prediction (2 dimensional array)
-    predicted_index = np.argmax(prediction, axis=1)
-
-    print("Expected index: {}, Predicted index: {}".format(y, predicted_index))
-    return predicted_index
-
-
 if __name__ == "__main__":
     # create train, validation and test sets
     inputs, targets = load_data(DATA_PATH)
@@ -148,7 +136,7 @@ if __name__ == "__main__":
     model.summary()
 
     # compile the network
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.00001)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
     model.compile(optimizer=optimizer,
                   loss='sparse_categorical_crossentropy',
@@ -158,7 +146,7 @@ if __name__ == "__main__":
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
                         batch_size=32,
-                        epochs=20)
+                        epochs=50)
 
     # plot accuracy and error over the epochs
     plot_history(history)
@@ -169,6 +157,6 @@ if __name__ == "__main__":
     print('Test loss:', test_loss)
 
     # make predictions on a sample
-    X = inputs_test[100]
-    y = targets_test[100]
-    predict(model, X, y)
+    X = inputs_test[99]
+    y = targets_test[99]
+    predict(model, X, y, data_global)
