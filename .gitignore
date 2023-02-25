@@ -3,7 +3,9 @@ data
 test
 *.rar
 cnn_model
-
+.venv2
+inputs
+outputs
 
 
 ### VirtualEnv template

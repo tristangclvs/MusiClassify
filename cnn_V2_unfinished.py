@@ -11,6 +11,7 @@ import librosa.display
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import tensorflow as tf
+# print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 import tensorflow_io as tfio
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -93,19 +94,20 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # 1st conv layer
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(189, 25, 1)))  # 132, 25, 1
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(32, (5, 5), activation='relu', input_shape=input_shape))
+    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 2nd conv layer
-    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(64, (5, 5), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 3rd conv layer
-    model.add(tf.keras.layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(128, (5, 5), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
+    # model.add(tf.keras.layers.Dropout(0.3))
 
     # Finally, flatten and feed to dense layer
     model.add(tf.keras.layers.Flatten())
