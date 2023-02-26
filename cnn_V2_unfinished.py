@@ -94,18 +94,18 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # 1st conv layer
-    model.add(tf.keras.layers.Conv2D(32, (5, 5), activation='relu', input_shape=input_shape))
-    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
+    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 2nd conv layer
-    model.add(tf.keras.layers.Conv2D(64, (5, 5), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
 
     # 3rd conv layer
-    model.add(tf.keras.layers.Conv2D(128, (5, 5), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((5, 5), strides=(1, 1), padding='same'))
+    model.add(tf.keras.layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
     model.add(tf.keras.layers.BatchNormalization())
     # model.add(tf.keras.layers.Dropout(0.3))
 

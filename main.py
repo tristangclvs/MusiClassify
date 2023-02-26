@@ -47,7 +47,7 @@ def file_mfcc(file, num_samples_per_segment, expected_num_mfcc_vectors_per_segme
     signal, sample_rate = librosa.load(file_path, sr=sr)
     if file_duration > 90:
         # do not take the 60 first seconds
-        signal = signal[60:(60 + 30 * sample_rate)]
+        signal = signal[60:]  # :(60 + 30 * sample_rate)
 
     # process all segments of audio file
     for segment in range(num_segments):
@@ -113,4 +113,4 @@ def save_mfcc(file_path, save_path, n_mfcc=25, n_fft=2048, hop_length=512, num_s
 
 if __name__ == "__main__":
     # print("Uncomment function to run it")
-    save_mfcc(file_path, json_path, num_segments=7)
+    save_mfcc(file_path, json_path, num_segments=6)
