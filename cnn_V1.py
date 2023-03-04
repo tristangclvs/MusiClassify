@@ -122,18 +122,18 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # Add the first convolutional layer
-    model.add(tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu',
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu',
                                      input_shape=input_shape))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
     model.add(tf.keras.layers.Dropout(0.25))
 
     # Add the second convolutional layer
-    model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu'))
+    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
     model.add(tf.keras.layers.Dropout(0.25))
 
     # Add the third convolutional layer
-    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
+    model.add(tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
     model.add(tf.keras.layers.Dropout(0.25))
 
@@ -141,10 +141,13 @@ def build_model(input_shape, number_of_genres):
     model.add(tf.keras.layers.Flatten())
 
     # Add a fully connected layer for classification
-    model.add(tf.keras.layers.Dense(64, activation='relu'))
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
     model.add(tf.keras.layers.Dropout(0.25))
 
-    model.add(tf.keras.layers.Dense(10, activation='softmax'))
+    # model.add(tf.keras.layers.Dense(128, activation='relu'))
+    # model.add(tf.keras.layers.Dropout(0.25))
+
+    model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
     return model
 
 
