@@ -91,33 +91,60 @@ def prepare_datasets(test_size, validation_size):
 
 
 def build_model(input_shape, number_of_genres):
-    # create model
+    # # create model
+    # model = tf.keras.Sequential()
+    #
+    # # 1st conv layer
+    # #                               (16, ...)
+    # model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))  # (132, 25, 1)
+    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # model.add(tf.keras.layers.BatchNormalization())
+    #
+    # # 2nd conv layer
+    # model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu'))
+    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # model.add(tf.keras.layers.BatchNormalization())
+    #
+    # # 3rd conv layer
+    # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
+    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # model.add(tf.keras.layers.BatchNormalization())
+    #
+    # # Finally, flatten and feed to dense layer
+    # model.add(tf.keras.layers.Flatten())
+    # model.add(tf.keras.layers.Dense(64, activation='relu'))
+    # model.add(tf.keras.layers.Dropout(0.3))  # add dropout to make model more robust and prevent overfitting
+    #
+    # # output layer
+    # model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
+
+    # Define the CNN model
     model = tf.keras.Sequential()
 
-    # 1st conv layer
-    #                               (16, ...)
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))  # (132, 25, 1)
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    model.add(tf.keras.layers.BatchNormalization())
+    # Add the first convolutional layer
+    model.add(tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu',
+                                     input_shape=input_shape))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # 2nd conv layer
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    model.add(tf.keras.layers.BatchNormalization())
+    # Add the second convolutional layer
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # 3rd conv layer
-    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    model.add(tf.keras.layers.BatchNormalization())
+    # Add the third convolutional layer
+    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # Finally, flatten and feed to dense layer
+    # Flatten the output from the convolutional layers
     model.add(tf.keras.layers.Flatten())
+
+    # Add a fully connected layer for classification
     model.add(tf.keras.layers.Dense(64, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.3))  # add dropout to make model more robust and prevent overfitting
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # output layer
-    model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
-
+    model.add(tf.keras.layers.Dense(10, activation='softmax'))
     return model
 
 
@@ -139,14 +166,17 @@ if __name__ == "__main__":
     # compile the network
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
-    model.compile(optimizer=optimizer,
-                  loss='sparse_categorical_crossentropy',
+    # model.compile(optimizer=optimizer,
+    #               loss='sparse_categorical_crossentropy',
+    #               metrics=['accuracy'])
+    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
                   metrics=['accuracy'])
 
     # train the CNN
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
-                        batch_size=64,
+                        batch_size=32,
                         epochs=50)  # batch_size=32
 
     # plot accuracy and error over the epochs
