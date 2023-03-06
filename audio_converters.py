@@ -1,8 +1,9 @@
 import logging
 import os
-from pydub import AudioSegment
+# from pydub import AudioSegment
 import librosa
 import soundfile as sf
+
 # ======================================
 inputs_folder = "inputs"
 outputs_folder = "outputs"
@@ -31,7 +32,7 @@ def audio_to_wav(file_path, outputs_folder=outputs_folder):
         # Get file format and assert its allowed
         file_format = file_path.split('.')[-1]
         assert file_format in allowed_formats
-        file_name = file_path.split('\\')[-1].replace("."+file_format, "")
+        file_name = file_path.split('\\')[-1].replace("." + file_format, "")
         print("\n =========== ")
         print("Processing {0}".format(file_name))
         print(" =========== \n")
@@ -46,7 +47,6 @@ def audio_to_wav(file_path, outputs_folder=outputs_folder):
         exit(1)
 
     return os.path.join(os.getcwd(), "outputs", output_file)
-
 
 # Zone test
 # audio_file = os.path.join(os.getcwd(), inputs_folder,

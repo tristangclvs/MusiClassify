@@ -8,11 +8,14 @@ import IPython.display as ipd
 import librosa
 import librosa.display
 
+from utils import file_mfcc, most_common, predict
+
 # import numpy as np  # linear algebra
 # import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 # import tensorflow as tf
 # import tensorflow_io as tfio
 # from matplotlib import pyplot as plt
+
 
 # =============================================================================
 
@@ -38,6 +41,8 @@ def file_mfcc(file, num_samples_per_segment, expected_num_mfcc_vectors_per_segme
               hop_length=512, num_segments=5, n_mfcc=25, n_fft=2048,
               iterator=1,
               file_duration=30):
+    """ Extracts mfcc from audio file and saves it into a json file along with genre labels. """
+
     # load audio file
     if dirpath is None:
         file_path = file
@@ -45,9 +50,10 @@ def file_mfcc(file, num_samples_per_segment, expected_num_mfcc_vectors_per_segme
         file_path = os.path.join(dirpath, file)
 
     signal, sample_rate = librosa.load(file_path, sr=sr)
+
     if file_duration > 90:
         # do not take the 60 first seconds
-        signal = signal[60:]  # :(60 + 30 * sample_rate)
+        signal = signal[len(signal) // 2: len(signal) // 2 + 30 * sample_rate]  # :(60 + 30 * sample_rate)
 
     # process all segments of audio file
     for segment in range(num_segments):

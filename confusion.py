@@ -4,11 +4,12 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from utils import predict
 from cnn_V1 import prepare_datasets
+
 # Create confusion matrix
-#confusion_matrix = tf.math.confusion_matrix(labels, predictions)
+# confusion_matrix = tf.math.confusion_matrix(labels, predictions)
 
 # Print confusion matrix
-#print(confusion_matrix)
+# print(confusion_matrix)
 
 # === ADAPTER AVEC LA SUITE === #
 # ===
@@ -20,27 +21,32 @@ print("\nData successfully loaded!\n")
 inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
     0.1, 0.1)
 
-reconstructed_model = keras.models.load_model('./cnn_model/cnn_v3')
-
+reconstructed_model = keras.models.load_model('./cnn_model/cnn_v6')
 
 # Generate example data
-labels = data_global['labels']
-#print([mfcc for mfcc in data_global['mfcc']])
-#predictions = tf.constant([predict(reconstructed_model, mfcc, label, data_global)[1] for mfcc, label in  zip(data_global['mfcc'],labels)])
-predictions = tf.constant([predict(reconstructed_model, mfcc, label, data_global)[1] for mfcc, label in  zip(inputs_train,targets_train)])
-#print (predictions)
+# labels = data_global['labels']
+# print('labels shape: ', len(labels))
 
+# print([mfcc for mfcc in data_global['mfcc']])
+# predictions = tf.constant([predict(reconstructed_model, mfcc, label, data_global)[1] for mfcc, label in  zip(data_global['mfcc'],labels)])
+# predictions = tf.constant([predict(reconstructed_model, mfcc, label, data_global)[1] for mfcc, label in zip(inputs_train, targets_train)])
+predictions = tf.constant(
+    [predict(reconstructed_model, mfcc, label, data_global)[0] for mfcc, label in zip(inputs_test, targets_test)])
+labels = tf.constant([label for label in targets_test])
+print('labels shape: ', labels.shape)
+# print (predictions)
+print('prediction shape: ', predictions.shape)
+# print('labels: ', labels)
+# print('predictions: ', predictions)
+# print('predictions: ', predictions.numpy())
 # Create confusion matrix
-confusion_matrix = tf.math.confusion_matrix(labels, predictions)
+confusion_matrix = tf.math.confusion_matrix(labels[0], predictions[0], num_classes=10)
 
 # Print confusion matrix
 print(confusion_matrix)
 
-
+# ===================================================================================================
 # y_array = [y for i in range(10)]
-
-
-
 # indexes_array = []
 
 # predict(reconstructed_model, X, y, data_global)
