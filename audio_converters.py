@@ -7,7 +7,7 @@ import soundfile as sf
 # ======================================
 inputs_folder = "inputs"
 outputs_folder = "outputs"
-allowed_formats = ["mp3", "flac"]
+allowed_formats = ["mp3"]
 
 
 def mp3_to_wav_all_files(inputs_folder=inputs_folder, outputs_folder=outputs_folder):
@@ -25,7 +25,7 @@ def mp3_to_wav_all_files(inputs_folder=inputs_folder, outputs_folder=outputs_fol
 
 def audio_to_wav(file_path, outputs_folder=outputs_folder):
     """
-    Converts audio file in .mp3 || .flac to .wav
+    Converts audio file in .mp3 to .wav
     :param: file_path: absolute path to audio file
     :param: outputs_folder: folder where .wav is stored
     """
