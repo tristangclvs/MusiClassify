@@ -186,3 +186,4 @@ cython_debug/
 
 /venv2/
 /venvPy310/
+/split_data/

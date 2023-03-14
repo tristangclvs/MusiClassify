@@ -7,6 +7,7 @@ import simpleaudio as sa
 
 
 def trim_audio(abs_file_path, start_time, end_time, write=False, sr=22050):
+    """ Trims an audio file and returns the trimmed audio """
     audio_path = audio_to_wav(abs_file_path)
     signal, sample_rate = librosa.load(audio_path, sr=sr)
     # Calculate the start and end samples for trimming

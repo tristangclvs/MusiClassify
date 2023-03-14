@@ -66,21 +66,16 @@ def load_data(data_path):
     return inputs, targets
 
 
-def prepare_datasets(test_size, validation_size):
-    # load data
-    inputs, targets = load_data(DATA_PATH)
-
+def prepare_datasets(inputs, targets, test_size, validation_size):
     # split in train and test
     inputs_train, inputs_test, targets_train, targets_test = train_test_split(inputs, targets,
-                                                                              test_size=test_size)  # shuffle = True
-
-    test = inputs_train[0]
-    print('inputs train: ', inputs_train.shape)
-    print('test: ', test.shape)
+                                                                              test_size=test_size,
+                                                                              random_state=0)
 
     # split in validation and test
     inputs_train, inputs_validation, targets_train, targets_validation = train_test_split(inputs_train, targets_train,
-                                                                                          test_size=validation_size)
+                                                                                          test_size=validation_size,
+                                                                                          random_state=1)
 
     # convert inputs to 3D arrays
     inputs_train = inputs_train[..., np.newaxis]  # 4D array -> (num_samples, 130, 13, 1)
@@ -91,33 +86,6 @@ def prepare_datasets(test_size, validation_size):
 
 
 def build_model(input_shape, number_of_genres):
-    # # create model
-    # model = tf.keras.Sequential()
-    #
-    # # 1st conv layer
-    # #                               (16, ...)
-    # model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))  # (132, 25, 1)
-    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    # model.add(tf.keras.layers.BatchNormalization())
-    #
-    # # 2nd conv layer
-    # model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu'))
-    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    # model.add(tf.keras.layers.BatchNormalization())
-    #
-    # # 3rd conv layer
-    # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
-    # model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
-    # model.add(tf.keras.layers.BatchNormalization())
-    #
-    # # Finally, flatten and feed to dense layer
-    # model.add(tf.keras.layers.Flatten())
-    # model.add(tf.keras.layers.Dense(64, activation='relu'))
-    # model.add(tf.keras.layers.Dropout(0.3))  # add dropout to make model more robust and prevent overfitting
-    #
-    # # output layer
-    # model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
-
     # Define the CNN model
     model = tf.keras.Sequential()
 
@@ -154,43 +122,54 @@ def build_model(input_shape, number_of_genres):
 if __name__ == "__main__":
     # create train, validation and test sets
     inputs, targets = load_data(DATA_PATH)
+
     print("\nData successfully loaded!\n")
 
     inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
-        0.1, 0.2)
+        inputs, targets, 0.1, 0.2)
+    inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
+                            targets_test]
+    names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
+                   "targets_test"]
+    for array, name in zip(inputs_targets_array, names_array):
+        # save the arrays to files
+        np.save(f'split_data/{name}.npy', array)
 
-    # build the CNN net
-    input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
-    print(input_shape)
-    number_of_genres = 10
-    model = build_model(input_shape, number_of_genres)
-    model.summary()
+    # load the array from the file
+    arr = np.load('split_data/inputs_train.npy')
 
-    # compile the network
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
-
-    # model.compile(optimizer=optimizer,
-    #               loss='sparse_categorical_crossentropy',
+    # # build the CNN net
+    # input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
+    # print(input_shape)
+    # number_of_genres = 10
+    # model = build_model(input_shape, number_of_genres)
+    # model.summary()
+    #
+    # # compile the network
+    # optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+    #
+    # # model.compile(optimizer=optimizer,
+    # #               loss='sparse_categorical_crossentropy',
+    # #               metrics=['accuracy'])
+    # model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    #               optimizer=keras.optimizers.Adam(learning_rate=0.0001),
     #               metrics=['accuracy'])
-    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-                  metrics=['accuracy'])
-
-    # train the CNN
-    history = model.fit(inputs_train, targets_train,
-                        validation_data=(inputs_validation, targets_validation),
-                        batch_size=32,
-                        epochs=50)  # batch_size=32
-
-    # plot accuracy and error over the epochs
-    plot_history(history)
-
-    # evaluate the CNN on the test set
-    test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
-    print('Test accuracy:', test_acc)
-    print('Test loss:', test_loss)
-
-    # make predictions on a sample
-    X = inputs_test[99]
-    y = targets_test[99]
-    predict(model, X, y, data_global)
+    #
+    # # train the CNN
+    # history = model.fit(inputs_train, targets_train,
+    #                     validation_data=(inputs_validation, targets_validation),
+    #                     batch_size=32,
+    #                     epochs=50)  # batch_size=32
+    #
+    # # plot accuracy and error over the epochs
+    # plot_history(history)
+    #
+    # # evaluate the CNN on the test set
+    # test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
+    # print('Test accuracy:', test_acc)
+    # print('Test loss:', test_loss)
+    #
+    # # make predictions on a sample
+    # X = inputs_test[99]
+    # y = targets_test[99]
+    # predict(model, X, y, data_global)
