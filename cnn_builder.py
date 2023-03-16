@@ -11,10 +11,11 @@ import librosa.display
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import tensorflow as tf
-# print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 import tensorflow_io as tfio
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+
+from utils import predict
 
 # ======================================
 
@@ -24,24 +25,43 @@ with open(DATA_PATH, "r") as fp:
     data_global = json.load(fp)
 
 
+# def plot_history(history):
+#     fig = plt.subplots(2)
+#
+#     # create accuracy subplot
+#     axs[0].plot(history.history["accuracy"], label="train accuracy")
+#     axs[0].plot(history.history["val_accuracy"], label="test accuracy")
+#     axs[0].set_ylabel("Accuracy")
+#     axs[0].legend(loc="lower right")
+#     axs[0].set_title("Accuracy eval")
+#
+#     # create accuracy subplot
+#     axs[1].plot(history.history["loss"], label="train loss")
+#     axs[1].plot(history.history["val_loss"], label="test loss")
+#     axs[1].set_ylabel("Loss")
+#     axs[1].set_xlabel("Epoch")
+#     axs[1].legend(loc="lower right")
+#     axs[1].set_title("Loss eval")
+#
+#     plt.show()
+
 def plot_history(history):
-    fig, axs = plt.subplots(2)
+    # Plot training & validation accuracy values
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
 
-    # create accuracy subplot
-    axs[0].plot(history.history["accuracy"], label="train accuracy")
-    axs[0].plot(history.history["val_accuracy"], label="test accuracy")
-    axs[0].set_ylabel("Accuracy")
-    axs[0].legend(loc="lower right")
-    axs[0].set_title("Accuracy eval")
-
-    # create accuracy subplot
-    axs[1].plot(history.history["loss"], label="train loss")
-    axs[1].plot(history.history["val_loss"], label="test loss")
-    axs[1].set_ylabel("Loss")
-    axs[1].set_xlabel("Epoch")
-    axs[1].legend(loc="lower right")
-    axs[1].set_title("Loss eval")
-
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
     plt.show()
 
 
@@ -90,48 +110,51 @@ def prepare_datasets(test_size, validation_size):
 
 
 def build_model(input_shape, number_of_genres):
-    # create model
+    # Define the CNN model
     model = tf.keras.Sequential()
 
-    # 1st conv layer
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # Add the first convolutional layer
+    model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu',
+                                     input_shape=input_shape))
     model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Activation('relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # 2nd conv layer
-    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # Add the second convolutional layer
+    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Activation('relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # 3rd conv layer
-    model.add(tf.keras.layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D((3, 3), strides=(1, 1), padding='same'))
+    # Add the third convolutional layer
+    model.add(tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.BatchNormalization())
-    # model.add(tf.keras.layers.Dropout(0.3))
+    model.add(tf.keras.layers.Activation('relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
 
-    # Finally, flatten and feed to dense layer
+    model.add(tf.keras.layers.Conv2D(512, kernel_size=(2, 2), activation='relu'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Activation('relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Dropout(0.25))
+
+    # Flatten the output from the convolutional layers
     model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(64, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.3))  # add dropout to make model more robust and prevent overfitting
 
-    # output layer
+    # Add a fully connected layer for classification
+    model.add(tf.keras.layers.Dense(256, activation='relu'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Activation('relu'))
+    model.add(tf.keras.layers.Dropout(0.25))
+
+    # model.add(tf.keras.layers.Dense(128, activation='relu'))
+    # model.add(tf.keras.layers.Dropout(0.25))
+
     model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
-
     return model
-
-
-def predict(model, X, y):
-    X = X[np.newaxis, ...]
-    prediction = model.predict(X)
-    # print(prediction[0])
-    # for i in range(len(prediction)):
-    #     print("Genre: {}, Percentage: {}%".format(data_global["mapping"], prediction[i] * 100))
-
-    # get the index with the maximum value from the prediction (2 dimensional array)
-    predicted_index = np.argmax(prediction, axis=1)
-
-    print("Expected index: {}, Predicted index: {}".format(y, predicted_index))
-    return predicted_index
 
 
 if __name__ == "__main__":
@@ -152,15 +175,18 @@ if __name__ == "__main__":
     # compile the network
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
-    model.compile(optimizer=optimizer,
-                  loss='sparse_categorical_crossentropy',
+    # model.compile(optimizer=optimizer,
+    #               loss='sparse_categorical_crossentropy',
+    #               metrics=['accuracy'])
+    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
                   metrics=['accuracy'])
 
     # train the CNN
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
                         batch_size=32,
-                        epochs=30)
+                        epochs=70)  # batch_size=32
 
     # plot accuracy and error over the epochs
     plot_history(history)
@@ -171,6 +197,9 @@ if __name__ == "__main__":
     print('Test loss:', test_loss)
 
     # make predictions on a sample
-    X = inputs_test[100]
-    y = targets_test[100]
-    predict(model, X, y)
+    X = inputs_test[99]
+    y = targets_test[99]
+    predict(model, X, y, data_global)
+
+    matrix = tf.math.confusion_matrix(targets_test, model.predict(inputs_test), num_classes=10)
+    print(matrix)
