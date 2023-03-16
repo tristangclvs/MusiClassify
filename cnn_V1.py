@@ -127,6 +127,7 @@ if __name__ == "__main__":
 
     inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
         inputs, targets, 0.1, 0.2)
+    # ===
     inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
                             targets_test]
     names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
@@ -134,42 +135,46 @@ if __name__ == "__main__":
     for array, name in zip(inputs_targets_array, names_array):
         # save the arrays to files
         np.save(f'split_data/{name}.npy', array)
+    # ===
 
     # load the array from the file
-    arr = np.load('split_data/inputs_train.npy')
+    # arr = np.load('split_data/inputs_train.npy')
 
-    # # build the CNN net
-    # input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
+    # build the CNN net
+    input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
     # print(input_shape)
-    # number_of_genres = 10
-    # model = build_model(input_shape, number_of_genres)
-    # model.summary()
-    #
-    # # compile the network
-    # optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
-    #
-    # # model.compile(optimizer=optimizer,
-    # #               loss='sparse_categorical_crossentropy',
-    # #               metrics=['accuracy'])
-    # model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    #               optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+    number_of_genres = 10
+    model = build_model(input_shape, number_of_genres)
+    model.summary()
+
+    # compile the network
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+
+    # model.compile(optimizer=optimizer,
+    #               loss='sparse_categorical_crossentropy',
     #               metrics=['accuracy'])
-    #
-    # # train the CNN
-    # history = model.fit(inputs_train, targets_train,
-    #                     validation_data=(inputs_validation, targets_validation),
-    #                     batch_size=32,
-    #                     epochs=50)  # batch_size=32
-    #
-    # # plot accuracy and error over the epochs
+    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+                  metrics=['accuracy'])
+
+    # train the CNN
+    history = model.fit(inputs_train, targets_train,
+                        validation_data=(inputs_validation, targets_validation),
+                        batch_size=32,
+                        epochs=50)  # batch_size=32
+
+    # plot accuracy and error over the epochs
     # plot_history(history)
-    #
-    # # evaluate the CNN on the test set
-    # test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
-    # print('Test accuracy:', test_acc)
-    # print('Test loss:', test_loss)
-    #
-    # # make predictions on a sample
-    # X = inputs_test[99]
-    # y = targets_test[99]
-    # predict(model, X, y, data_global)
+
+    # evaluate the CNN on the test set
+    test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
+    print('Test accuracy:', test_acc)
+    print('Test loss:', test_loss)
+
+    # make predictions on a sample
+    X = inputs_test[99]
+    y = targets_test[99]
+    predict(model, X, y, data_global)
+    
+    # load the array from the file
+    # arr = np.load('split_data/inputs_train.npy')
