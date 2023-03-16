@@ -22,7 +22,7 @@ data_empty = {
     "mfcc": [],
     "labels": []
 }
-
+sr = 22500
 # ======================================
 
 # def most_common(lst):
