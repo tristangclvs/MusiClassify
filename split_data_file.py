@@ -1,56 +1,37 @@
 from cnn_V1 import prepare_datasets, load_data, DATA_PATH
-import json
+import numpy as np
+from sklearn.model_selection import train_test_split
 
-print("Loading data...")
-inputs, targets = load_data(DATA_PATH)
-print("\nData successfully loaded!\n")
+def prepare_datasets(test_size, validation_size):
+    # load data
+    inputs, targets = load_data(DATA_PATH)
+    # split in train and test
+    inputs_train, inputs_test, targets_train, targets_test = train_test_split(inputs, targets,
+                                                                              test_size=test_size,
+                                                                              random_state=0)
+    # split in validation and test
+    inputs_train, inputs_validation, targets_train, targets_validation = train_test_split(inputs_train, targets_train,
+                                                                                          test_size=validation_size,
+                                                                                          random_state=1)
+    # convert inputs to 3D arrays
+    inputs_train = inputs_train[..., np.newaxis]  # 4D array -> (num_samples, 130, 13, 1)
+    inputs_test = inputs_test[..., np.newaxis]
+    inputs_validation = inputs_validation[..., np.newaxis]
 
-inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
-    0.1, 0.2)
+    return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
 
-print("\nData successfully split!\n")
-print("Train set: ", inputs_train.shape, targets_train.shape)
-print("Validation set: ", inputs_validation.shape, targets_validation.shape)
-print("Test set: ", inputs_test.shape, targets_test.shape)
 
-data_empty = {
-    "mapping": [
-        "blues",
-        "classical",
-        "country",
-        "disco",
-        "hiphop",
-        "jazz",
-        "metal",
-        "pop",
-        "reggae",
-        "rock"
-    ],
-    "mfcc": [],
-    "labels": []
-}
-
-data_train = {
-    "mfcc": [inputs_train.tolist()],
-    "labels": [targets_train.tolist()]
-}
-data_validation = {
-    "mfcc": [inputs_validation.tolist()],
-    "labels": [targets_validation.tolist()]
-}
-data_test = {
-    "mfcc": [inputs_test.tolist()],
-    "labels": [targets_test.tolist()]
-}
-
-with open(f"data_train.json", "w") as fp:
-    json.dump(data_train, fp, indent=4)
-print("Saved train json file")
-
-with open(f"data_validation.json", "w") as fp:
-    json.dump(data_validation, fp, indent=4)
-print("Saved validation json file")
-
-with open(f"data_test.json", "w") as fp:
-    json.dump(data_test, fp, indent=4)
-print("Saved test json file")
+def split_data_file(inputs, targets, test_size=0.1, validation_size=0.2):
+    # test_size = 0.1
+    # validation_size = 0.2
+    inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(inputs, targets,
+                                                                                                                     test_size, validation_size)
+    inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
+                            targets_test]
+    names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
+                   "targets_test"]
+    for array, name in zip(inputs_targets_array, names_array):
+        # save the arrays to files
+        np.save(f'split_data/{name}.npy', array)
+        
+    return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
