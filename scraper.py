@@ -5,7 +5,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 
-# =============================================================================
+#                                                                               #
+# #                                                                           # #
+# ============================================================================= #
+# Aborted code : I have not the rights of the scraped website to use it         #
+# ============================================================================= #
+# #                                                                           # #
+#                                                                               #
 
 # # Ask for Genre and creates directory if not already existing # #
 # Genre of the musics to scrape
