@@ -12,8 +12,10 @@ import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import tensorflow as tf
 import tensorflow_io as tfio
-from matplotlib import pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+import seaborn as sns
 
 from utils import predict
 
@@ -25,25 +27,47 @@ with open(DATA_PATH, "r") as fp:
     data_global = json.load(fp)
 
 
-def plot_history(history):
-    fig, axs = plt.subplots(2)
+def plot_loss_acc(history):
+    """Plot training and (optionally) validation loss and accuracy"""
+    # Setup plots
+    # % matplotlib inline
+    plt.rcParams["figure.figsize"] = 10, 8
+    # % config InlineBackend.figure_format = 'retina'
+    sns.set()
 
-    # create accuracy subplot
-    axs[0].plot(history.history["accuracy"], label="train accuracy")
-    axs[0].plot(history.history["val_accuracy"], label="test accuracy")
-    axs[0].set_ylabel("Accuracy")
-    axs[0].legend(loc="lower right")
-    axs[0].set_title("Accuracy eval")
+    loss = history.history["loss"]
+    epochs = range(1, len(loss) + 1)
 
-    # create accuracy subplot
-    axs[1].plot(history.history["loss"], label="train loss")
-    axs[1].plot(history.history["val_loss"], label="test loss")
-    axs[1].set_ylabel("Loss")
-    axs[1].set_xlabel("Epoch")
-    axs[1].legend(loc="lower right")
-    axs[1].set_title("Loss eval")
+    plt.figure(figsize=(10, 10))
 
-    plt.show()
+    plt.subplot(2, 1, 1)
+    plt.plot(epochs, loss, ".--", label="Training loss")
+    final_loss = loss[-1]
+    title = "Training loss: {:.4f}".format(final_loss)
+    plt.ylabel("Loss")
+    if "val_loss" in history.history:
+        val_loss = history.history["val_loss"]
+        plt.plot(epochs, val_loss, "o-", label="Validation loss")
+        final_val_loss = val_loss[-1]
+        title += ", Validation loss: {:.4f}".format(final_val_loss)
+    plt.title(title)
+    plt.legend()
+
+    acc = history.history["accuracy"]
+
+    plt.subplot(2, 1, 2)
+    plt.plot(epochs, acc, ".--", label="Training acc")
+    final_acc = acc[-1]
+    title = "Training accuracy: {:.2f}%".format(final_acc * 100)
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    if "val_accuracy" in history.history:
+        val_acc = history.history["val_accuracy"]
+        plt.plot(epochs, val_acc, "o-", label="Validation acc")
+        final_val_acc = val_acc[-1]
+        title += ", Validation accuracy: {:.2f}%".format(final_val_acc * 100)
+    plt.title(title)
+    plt.legend()
 
 
 # Load data from json file
@@ -67,20 +91,40 @@ def load_data(data_path):
 
 
 def prepare_datasets(inputs, targets, test_size, validation_size):
-    # split in train and test
-    inputs_train, inputs_test, targets_train, targets_test = train_test_split(inputs, targets,
-                                                                              test_size=test_size,
-                                                                              random_state=0)
+    # Check if split_data folder exists and if the files are already created
+    if os.path.exists("split_data"):
+        print("Split data already exists")
+        inputs_train = np.load("split_data/inputs_train.npy")
+        inputs_validation = np.load("split_data/inputs_validation.npy")
+        inputs_test = np.load("split_data/inputs_test.npy")
+        targets_train = np.load("split_data/targets_train.npy")
+        targets_validation = np.load("split_data/targets_validation.npy")
+        targets_test = np.load("split_data/targets_test.npy")
+    else:
+        print("Split data doesn't exist, need to create it")
+        # split in train and test
+        inputs_train, inputs_test, targets_train, targets_test = train_test_split(inputs, targets,
+                                                                                  test_size=test_size,
+                                                                                  random_state=0)
+        # split in validation and test
+        inputs_train, inputs_validation, targets_train, targets_validation = train_test_split(inputs_train,
+                                                                                              targets_train,
+                                                                                              test_size=validation_size,
+                                                                                              random_state=1)
+        # convert inputs to 3D arrays
+        inputs_train = inputs_train[..., np.newaxis]  # 4D array -> (num_samples, 130, 13, 1)
+        inputs_test = inputs_test[..., np.newaxis]
+        inputs_validation = inputs_validation[..., np.newaxis]
 
-    # split in validation and test
-    inputs_train, inputs_validation, targets_train, targets_validation = train_test_split(inputs_train, targets_train,
-                                                                                          test_size=validation_size,
-                                                                                          random_state=1)
-
-    # convert inputs to 3D arrays
-    inputs_train = inputs_train[..., np.newaxis]  # 4D array -> (num_samples, 130, 13, 1)
-    inputs_test = inputs_test[..., np.newaxis]
-    inputs_validation = inputs_validation[..., np.newaxis]
+        # ==============================================================================================================
+        inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
+                                targets_test]
+        names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
+                       "targets_test"]
+        for array, name in zip(inputs_targets_array, names_array):
+            # save the arrays to files
+            np.save(f'split_data/{name}.npy', array)
+        # ==============================================================================================================
 
     return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
 
@@ -93,27 +137,26 @@ def build_model(input_shape, number_of_genres):
     model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu',
                                      input_shape=input_shape))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
-    model.add(tf.keras.layers.Dropout(0.25))
+    model.add(tf.keras.layers.Dropout(0.2))
 
     # Add the second convolutional layer
     model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
-    model.add(tf.keras.layers.Dropout(0.25))
 
     # Add the third convolutional layer
     model.add(tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
-    model.add(tf.keras.layers.Dropout(0.25))
+    model.add(tf.keras.layers.Dropout(0.2))
 
     # Flatten the output from the convolutional layers
     model.add(tf.keras.layers.Flatten())
 
     # Add a fully connected layer for classification
+    model.add(tf.keras.layers.Dense(256, activation='relu'))
+    model.add(tf.keras.layers.Dropout(0.2))
+
     model.add(tf.keras.layers.Dense(128, activation='relu'))
     model.add(tf.keras.layers.Dropout(0.25))
-
-    # model.add(tf.keras.layers.Dense(128, activation='relu'))
-    # model.add(tf.keras.layers.Dropout(0.25))
 
     model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
     return model
@@ -127,15 +170,6 @@ if __name__ == "__main__":
 
     inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
         inputs, targets, 0.1, 0.2)
-    # ===
-    inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
-                            targets_test]
-    names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
-                   "targets_test"]
-    for array, name in zip(inputs_targets_array, names_array):
-        # save the arrays to files
-        np.save(f'split_data/{name}.npy', array)
-    # ===
 
     # load the array from the file
     # arr = np.load('split_data/inputs_train.npy')
@@ -148,11 +182,6 @@ if __name__ == "__main__":
     model.summary()
 
     # compile the network
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
-
-    # model.compile(optimizer=optimizer,
-    #               loss='sparse_categorical_crossentropy',
-    #               metrics=['accuracy'])
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   optimizer=keras.optimizers.Adam(learning_rate=0.0001),
                   metrics=['accuracy'])
@@ -160,21 +189,21 @@ if __name__ == "__main__":
     # train the CNN
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
-                        batch_size=32,
-                        epochs=50)  # batch_size=32
+                        batch_size=128,
+                        epochs=50)
 
     # plot accuracy and error over the epochs
-    # plot_history(history)
+    plot_loss_acc(history)
 
     # evaluate the CNN on the test set
     test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
-    print('Test accuracy:', test_acc)
+    print(f"Test accuracy: {test_acc * 100:.2f}%")
     print('Test loss:', test_loss)
 
     # make predictions on a sample
     X = inputs_test[99]
     y = targets_test[99]
     predict(model, X, y, data_global)
-    
+
     # load the array from the file
     # arr = np.load('split_data/inputs_train.npy')
