@@ -25,9 +25,12 @@ def trim_audio(abs_file_path, start_time, end_time, write=False, sr=22050):
 
 
 # ======================================================================================
-genre: str = input("Enter the genre of the musics you want to scrape: ")
+genre: str = input("Enter the genre of the musics you want to trim: ")
 
 file_path: str = f"downloads\\{genre.capitalize()}\\"
+if file_path not in os.listdir(os.getcwd()):
+    print("The genre you entered does not exist")
+    exit()
 
 for file in os.listdir(file_path):
     abs_file_path: str = os.path.join(os.getcwd(), file_path, file)
