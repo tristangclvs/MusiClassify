@@ -33,17 +33,21 @@ def plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens):
         plt.show()
 
 
-# model_version = ""
-# while model_version not in ["9", "10", "11"]:
-#     model_version = input("Select model version (9, 10, 11):  ")
+model_version = ""
+while model_version not in ["9", "10", "11", "12"]:
+    model_version = input("Select model version (9 - 12):  ")
+    model = tf.keras.models.load_model(f"cnn_model/cnn_v{model_version}")
+    inputs_test = np.load("split_data/inputs_test.npy")
+    targets_test = np.load("split_data/targets_test.npy")
+    plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
 
 cmaps = [plt.cm.Greens, plt.cm.Blues, plt.cm.Reds]
 i = 0
-for model_version in ["9", "10", "11"]:
-    model = tf.keras.models.load_model(f"cnn_model/cnn_v{model_version}")
-
-    inputs_test = np.load("split_data/inputs_test.npy")
-    targets_test = np.load("split_data/targets_test.npy")
-
-    plot_conf_mat(model, inputs_test, targets_test, colormap=cmaps[i])
-    i += 1
+# for model_version in ["9", "10", "11"]:
+#     model = tf.keras.models.load_model(f"cnn_model/cnn_v{model_version}")
+#
+#     inputs_test = np.load("split_data/inputs_test.npy")
+#     targets_test = np.load("split_data/targets_test.npy")
+#
+#     plot_conf_mat(model, inputs_test, targets_test, colormap=cmaps[i])
+#     i += 1

@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 import seaborn as sns
 
 from utils import predict
+from confusion_matrix import plot_conf_mat
 
 # ======================================
 
@@ -68,6 +69,7 @@ def plot_loss_acc(history):
         title += ", Validation accuracy: {:.2f}%".format(final_val_acc * 100)
     plt.title(title)
     plt.legend()
+    plt.show()
 
 
 # Load data from json file
@@ -153,10 +155,12 @@ def build_model(input_shape, number_of_genres):
 
     # Add a fully connected layer for classification
     model.add(tf.keras.layers.Dense(256, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.Dropout(0.3))
 
     model.add(tf.keras.layers.Dense(128, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.25))
+    model.add(tf.keras.layers.Dropout(0.3))
+
+    model.add(tf.keras.layers.Dense(64, activation='relu'))
 
     model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
     return model
@@ -207,3 +211,6 @@ if __name__ == "__main__":
 
     # load the array from the file
     # arr = np.load('split_data/inputs_train.npy')
+
+    # plot the confusion matrix
+    plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
