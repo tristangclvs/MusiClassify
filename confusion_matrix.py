@@ -21,7 +21,11 @@ def plot_conf_mat(model, inputs_test, targets_test):
         plt.show()
 
 
-model = tf.keras.models.load_model("cnn_model/cnn_v10")
+model_version = ""
+while model_version not in ["9", "10", "11"]:
+    model_version = input("Select model version (9, 10, 11):  ")
+
+model = tf.keras.models.load_model(f"cnn_model/cnn_v{model_version}")
 
 inputs_test = np.load("split_data/inputs_test.npy")
 targets_test = np.load("split_data/targets_test.npy")
