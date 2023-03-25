@@ -17,6 +17,7 @@ def plot_conf_mat(model, inputs_test, targets_test):
                                                          "metal", "pop", "reggae", "rock"])
 
         display.plot()
+        plt.title(f"Confusion Matrix of model v{model_version}")
         plt.xticks(rotation=45)
         plt.show()
 
