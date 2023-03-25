@@ -7,6 +7,11 @@ import tensorflow as tf
 
 # Plot the confusion matrix for a model and a dataset
 def plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens):
+    """ Plot the confusion matrix for a model and a dataset
+     :param model: The model to evaluate
+     :param inputs_test: The inputs of the test dataset
+     :param targets_test: The targets of the test dataset
+     :param colormap: The colormap to use for the confusion matrix """
     y_probs = model.predict(inputs_test)
     y_preds = np.argmax(y_probs, axis=1)
 
