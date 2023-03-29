@@ -213,4 +213,4 @@ if __name__ == "__main__":
     # arr = np.load('split_data/inputs_train.npy')
 
     # plot the confusion matrix
-    plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
+    # plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
