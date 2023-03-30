@@ -6,7 +6,7 @@ In fact, thanks to a Convolutional Neural Network (CNN) and audio processing lib
 ## Dataset 
 
 The dataset used to train this model is the GTZAN Dataset. This dataset consists in 1000 audio files of 30 seconds each, divided in 10 different genres : 
-
+<div align="center" >
 <table>
   <tr>
     <th>Blues</th>
@@ -21,7 +21,7 @@ The dataset used to train this model is the GTZAN Dataset. This dataset consists
     <th>Rock</th>
   </tr>
 </table>
-
+</div>
 
 ## Usage
 
