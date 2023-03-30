@@ -31,9 +31,9 @@ However, a website will soon be at your disposal to try and find the genre of yo
 ## Matrix
 
 The efficiency of the latest model in date can be displayed by this confusion matrix:
-
+<div align="center" >
 ![Confusion Matrix](https://media.discordapp.net/attachments/806147253504573520/1091108161643102339/conf_mat_v12.png)
-
+</div>
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 - [Python3](https://www.python.org/download/releases/3.0/) - Programming Language
