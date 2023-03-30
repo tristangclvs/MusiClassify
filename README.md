@@ -34,3 +34,9 @@ The efficiency of the latest model in date can be displayed by this confusion ma
 
 ![Confusion Matrix](https://media.discordapp.net/attachments/806147253504573520/1091108161643102339/conf_mat_v12.png)
 
+
+## ⛏️ Built Using <a name = "built_using"></a>
+- [Python3](https://www.python.org/download/releases/3.0/) - Programming Language
+- [TensorFlow](https://www.tensorflow.org/) - Machine/Deep Learning framework
+
+
