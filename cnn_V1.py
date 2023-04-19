@@ -14,6 +14,7 @@ import tensorflow as tf
 import tensorflow_io as tfio
 import matplotlib
 import matplotlib.pyplot as plt
+from keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 import seaborn as sns
 
@@ -136,30 +137,41 @@ def build_model(input_shape, number_of_genres):
     model = tf.keras.Sequential()
 
     # Add the first convolutional layer
-    model.add(tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu',
+    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu',
                                      input_shape=input_shape))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.Dropout(0.2))
 
     # Add the second convolutional layer
-    model.add(tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
-
-    # Add the third convolutional layer
     model.add(tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu'))
     model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.Dropout(0.2))
 
+    # Add the third convolutional layer
+    model.add(tf.keras.layers.Conv2D(512, kernel_size=(3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Dropout(0.2))
+
+    model.add(tf.keras.layers.Conv2D(256, kernel_size=(2, 2), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
     # Flatten the output from the convolutional layers
     model.add(tf.keras.layers.Flatten())
 
     # Add a fully connected layer for classification
     model.add(tf.keras.layers.Dense(256, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.3))
+    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.Dense(256, activation='relu'))
 
     model.add(tf.keras.layers.Dense(128, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.3))
+    model.add(tf.keras.layers.Dropout(0.2))
 
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.Dense(64, activation='relu'))
     model.add(tf.keras.layers.Dense(64, activation='relu'))
 
     model.add(tf.keras.layers.Dense(number_of_genres, activation='softmax'))
@@ -190,11 +202,19 @@ if __name__ == "__main__":
                   optimizer=keras.optimizers.Adam(learning_rate=0.0001),
                   metrics=['accuracy'])
 
+    # create the EarlyStopping callback
+    early_stopping = EarlyStopping(
+        monitor='val_loss',  # monitor the validation loss
+        patience=3,  # stop after 3 epochs of no improvement
+        restore_best_weights=True  # restore the weights from the best epoch
+    )
+
     # train the CNN
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
                         batch_size=128,
-                        epochs=50)
+                        epochs=50,
+                        callbacks=[early_stopping])
 
     # plot accuracy and error over the epochs
     plot_loss_acc(history)
