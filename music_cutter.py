@@ -8,7 +8,7 @@ import simpleaudio as sa
 
 def trim_audio(abs_file_path, start_time, end_time, write=False, sr=22050):
     """ Trims an audio file and returns the trimmed audio """
-    audio_path = audio_to_wav(abs_file_path)
+    audio_path = abs_file_path if audio_to_wav(abs_file_path) is None else audio_to_wav(abs_file_path)
     signal, sample_rate = librosa.load(audio_path, sr=sr)
     # Calculate the start and end samples for trimming
     start_sample: int = int(start_time * sr)
@@ -24,18 +24,19 @@ def trim_audio(abs_file_path, start_time, end_time, write=False, sr=22050):
     return trimmed_audio
 
 
-# ======================================================================================
-genre: str = input("Enter the genre of the musics you want to trim: ")
+if __name__ == '__main__':
+    # ======================================================================================
+    genre: str = input("Enter the genre of the musics you want to trim: ")
 
-file_path: str = f"downloads\\{genre.capitalize()}\\"
-if file_path not in os.listdir(os.getcwd()):
-    print("The genre you entered does not exist")
-    exit()
+    file_path: str = f"downloads\\{genre.capitalize()}\\"
+    if file_path not in os.listdir(os.getcwd()):
+        print("The genre you entered does not exist")
+        exit()
 
-for file in os.listdir(file_path):
-    abs_file_path: str = os.path.join(os.getcwd(), file_path, file)
-    for i in range(3):
-        # Set the start and end times for trimming (in seconds)
-        start_time = 30 * i
-        end_time = 30 * i + 30
-        trimmed_audio = trim_audio(abs_file_path, start_time, end_time)
+    for file in os.listdir(file_path):
+        abs_file_path: str = os.path.join(os.getcwd(), file_path, file)
+        for i in range(3):
+            # Set the start and end times for trimming (in seconds)
+            start_time = 30 * i
+            end_time = 30 * i + 30
+            trimmed_audio = trim_audio(abs_file_path, start_time, end_time)

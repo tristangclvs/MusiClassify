@@ -198,23 +198,23 @@ if __name__ == "__main__":
     model.summary()
 
     # compile the network
-    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    model.compile(loss='sparse_categorical_crossentropy',
                   optimizer=keras.optimizers.Adam(learning_rate=0.0001),
                   metrics=['accuracy'])
 
     # create the EarlyStopping callback
     early_stopping = EarlyStopping(
         monitor='val_loss',  # monitor the validation loss
-        patience=3,  # stop after 3 epochs of no improvement
+        patience=10,  # stop after 3 epochs of no improvement
         restore_best_weights=True  # restore the weights from the best epoch
     )
 
     # train the CNN
     history = model.fit(inputs_train, targets_train,
                         validation_data=(inputs_validation, targets_validation),
-                        batch_size=128,
+                        batch_size=64,
                         epochs=50,
-                        callbacks=[early_stopping])
+                        )  # callbacks=[early_stopping]
 
     # plot accuracy and error over the epochs
     plot_loss_acc(history)
