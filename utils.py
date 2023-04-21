@@ -2,7 +2,9 @@
 import os
 
 import math
+import random
 
+import tensorflow.keras as keras
 import tensorflow.keras as keras
 import json
 import IPython.display as ipd
@@ -14,8 +16,10 @@ import tensorflow as tf
 import tensorflow_io as tfio
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-
+from keras.callbacks import EarlyStopping
+import seaborn as sns
 from music_cutter import trim_audio
+from confusion_matrix import plot_conf_mat
 
 # ======================================
 # CONSTANTS

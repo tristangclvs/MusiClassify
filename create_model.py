@@ -1,32 +1,46 @@
 # All imports
 import os
-
+import json
 import math
+import random
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+import seaborn as sns
+import numpy as np
+import tensorflow as tf
 
 import tensorflow.keras as keras
-import json
 import IPython.display as ipd
 import librosa
 import librosa.display
-import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-import tensorflow as tf
 import tensorflow_io as tfio
 import matplotlib
-import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
-import seaborn as sns
+from utils import most_common, predict
 
-from utils import predict
 from confusion_matrix import plot_conf_mat
 
+
 # ======================================
-
-
-DATA_PATH = "data.json"
-with open(DATA_PATH, "r") as fp:
-    data_global = json.load(fp)
+def test_range(model, inputs_test, targets_test, nb_tests):
+    correct_count = 0
+    for i in range(nb_tests):
+        # On va chercher les éléments à tester dans un jeu de données n'ayant pas été vu par le modèle lors de l'entraînement
+        rand = random.randrange(len(inputs_test))
+        X = inputs_test[rand]
+        y = targets_test[rand]
+        predicted_index, prediction = predict(model, X, y, data)
+        if predicted_index == y:
+            print("Prediction correcte")
+            correct_count += 1
+        else:
+            print("Mauvaise prediction")
+    print()
+    print(f"Echantillon de {nb_tests} essais")
+    print(f"Bonnes predictions : {(correct_count / nb_tests) * 100:.2f}%")
 
 
 def plot_loss_acc(history):
@@ -74,17 +88,13 @@ def plot_loss_acc(history):
 
 
 # Load data from json file
-def load_data(data_path):
+def load_data(data):
     """
     Loads the data from the specified path and converts it into numpy arrays
-
-    :param data_path: the path to the data file
+    :param data: the data file
     :return: The inputs and targets are being returned.
     """
-    with open(data_path, "r") as fp:
-        data = json.load(fp)
-
-    # convert lists to numpy arrays
+    # Convert lists to numpy arrays
     inputs = np.array(data["mfcc"])
     print('inputs: ', inputs.shape)
     targets = np.array(data["labels"])
@@ -178,59 +188,53 @@ def build_model(input_shape, number_of_genres):
     return model
 
 
-if __name__ == "__main__":
-    # create train, validation and test sets
-    inputs, targets = load_data(DATA_PATH)
+DATA_PATH = "data.json"
+with open(DATA_PATH, "r") as fp:
+    data = json.load(fp)
 
-    print("\nData successfully loaded!\n")
+random.seed()
 
-    inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
-        inputs, targets, 0.1, 0.2)
+# create train, validation and test sets
+inputs, targets = load_data(data)
 
-    # load the array from the file
-    # arr = np.load('split_data/inputs_train.npy')
+print("\nData successfully loaded!\n")
 
-    # build the CNN net
-    input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
-    # print(input_shape)
-    number_of_genres = 10
-    model = build_model(input_shape, number_of_genres)
-    model.summary()
+inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
+    inputs, targets, 0.1, 0.2)
 
-    # compile the network
-    model.compile(loss='sparse_categorical_crossentropy',
-                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-                  metrics=['accuracy'])
+# build the CNN net
+input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
 
-    # create the EarlyStopping callback
-    early_stopping = EarlyStopping(
-        monitor='val_loss',  # monitor the validation loss
-        patience=10,  # stop after 3 epochs of no improvement
-        restore_best_weights=True  # restore the weights from the best epoch
-    )
+# print(input_shape)
+number_of_genres = 10
+model = build_model(input_shape, number_of_genres)
+model.summary()
 
-    # train the CNN
-    history = model.fit(inputs_train, targets_train,
-                        validation_data=(inputs_validation, targets_validation),
-                        batch_size=64,
-                        epochs=50,
-                        callbacks=[early_stopping])
-    
-    # plot accuracy and error over the epochs
-    plot_loss_acc(history)
+# compile the network
+model.compile(loss='sparse_categorical_crossentropy',
+              optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+              metrics=['accuracy'])
 
-    # evaluate the CNN on the test set
-    test_loss, test_acc = model.evaluate(inputs_test, targets_test, verbose=2)
-    print(f"Test accuracy: {test_acc * 100:.2f}%")
-    print('Test loss:', test_loss)
+# create the EarlyStopping callback
+early_stopping = EarlyStopping(
+    monitor='val_loss',  # monitor the validation loss
+    patience=10,  # stop after 3 epochs of no improvement
+    restore_best_weights=True  # restore the weights from the best epoch
+)
 
-    # make predictions on a sample
-    X = inputs_test[99]
-    y = targets_test[99]
-    predict(model, X, y, data_global)
+# train the CNN
+print("Training the model... This may take a while...")
+history = model.fit(inputs_train, targets_train,
+                    validation_data=(inputs_validation, targets_validation),
+                    batch_size=BATCH_SIZE,
+                    epochs=epochs_nb,
+                    callbacks=[early_stopping])
 
-    # load the array from the file
-    # arr = np.load('split_data/inputs_train.npy')
+# plot accuracy and error over the epochs
+plot_loss_acc(history)
 
-    # plot the confusion matrix
-    # plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
+# evaluate the CNN on a sample
+test_range(model, inputs_test=inputs_test, targets_test=targets_test, nb_tests=20)
+
+# plot the confusion matrix
+plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)

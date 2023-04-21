@@ -1,4 +1,4 @@
-from cnn_V1 import load_data, DATA_PATH
+from create_model import load_data, DATA_PATH
 import os
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -41,19 +41,3 @@ def prepare_datasets(inputs, targets, test_size, validation_size):
         # ==============================================================================================================
 
     return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
-
-# def split_data_file(inputs, targets, test_size=0.1, validation_size=0.2):
-#     # test_size = 0.1
-#     # validation_size = 0.2
-#     inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
-#         inputs, targets,
-#         test_size, validation_size)
-#     inputs_targets_array = [inputs_train, inputs_validation, inputs_test, targets_train, targets_validation,
-#                             targets_test]
-#     names_array = ["inputs_train", "inputs_validation", "inputs_test", "targets_train", "targets_validation",
-#                    "targets_test"]
-#     for array, name in zip(inputs_targets_array, names_array):
-#         # save the arrays to files
-#         np.save(f'split_data/{name}.npy', array)
-#
-#     return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
