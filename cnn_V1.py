@@ -214,8 +214,8 @@ if __name__ == "__main__":
                         validation_data=(inputs_validation, targets_validation),
                         batch_size=64,
                         epochs=50,
-                        )  # callbacks=[early_stopping]
-
+                        callbacks=[early_stopping])
+    
     # plot accuracy and error over the epochs
     plot_loss_acc(history)
 
