@@ -1,5 +1,12 @@
 import subprocess
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+import seaborn as sns
+import numpy as np
+import tensorflow as tf
+from confusion_matrix import plot_conf_mat
 
+# =================================================================================================
 ## First of all, install all required packages
 # Define the command to use
 cmd = ['pip', 'install', '-r', 'requirements.txt']
@@ -9,13 +16,6 @@ print("Installing required packages...")
 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 stdout, stderr = process.communicate()
 print("Packages installed !")
-
-import matplotlib.pyplot as plt
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-import seaborn as sns
-import numpy as np
-import tensorflow as tf
-from confusion_matrix import plot_conf_mat
 
 # =================================================================================================
 
