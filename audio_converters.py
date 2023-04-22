@@ -47,7 +47,7 @@ def audio_to_wav(file_path, outputs_folder=outputs_folder):
 
     except AssertionError:
         print('DUT DUT ERROR, THIS IS NOT A MP3 FILE')
-        exit(1)
+        return None
 
     return os.path.join(os.getcwd(), "outputs", output_file)
 

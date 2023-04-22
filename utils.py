@@ -2,7 +2,9 @@
 import os
 
 import math
+import random
 
+import tensorflow.keras as keras
 import tensorflow.keras as keras
 import json
 import IPython.display as ipd
@@ -14,6 +16,10 @@ import tensorflow as tf
 import tensorflow_io as tfio
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+from keras.callbacks import EarlyStopping
+import seaborn as sns
+from music_cutter import trim_audio
+from confusion_matrix import plot_conf_mat
 
 # ======================================
 # CONSTANTS
@@ -64,24 +70,30 @@ def file_mfcc(file, num_samples_per_segment, expected_num_mfcc_vectors_per_segme
     signal, sample_rate = librosa.load(file_path, sr=sr)
 
     if file_duration > 90:
-        # do not take the 60 first seconds
-        signal = signal[len(signal) // 2: len(signal) // 2 + 30 * sample_rate]  # :(60 + 30 * sample_rate)
+        nb_segments = file_duration // 30
+        for i in range(int(nb_segments)):
+            # Set the start and end times for trimming (in seconds)
+            start_time = 30 * i
+            end_time = 30 * i + 30
+            trimmed_audio = trim_audio(file_path, start_time, end_time)
+            signal = trimmed_audio
+            # signal = signal[len(signal) // 2: len(signal) // 2 + 30 * sample_rate]  # :(60 + 30 * sample_rate)
+            print("Processing trimmed signal n°{}...".format(i + 1))
+            # process all segments of audio file
+            for segment in range(num_segments):
+                start_sample = num_samples_per_segment * segment
+                finish_sample = start_sample + num_samples_per_segment
 
-    # process all segments of audio file
-    for segment in range(num_segments):
-        start_sample = num_samples_per_segment * segment
-        finish_sample = start_sample + num_samples_per_segment
+                # store the mfcc for segment if it has the expected length
+                mfcc = librosa.feature.mfcc(y=signal[start_sample:finish_sample],
+                                            sr=sample_rate,
+                                            n_fft=n_fft,
+                                            n_mfcc=n_mfcc,
+                                            hop_length=hop_length)
 
-        # store the mfcc for segment if it has the expected length
-        mfcc = librosa.feature.mfcc(y=signal[start_sample:finish_sample],
-                                    sr=sample_rate,
-                                    n_fft=n_fft,
-                                    n_mfcc=n_mfcc,
-                                    hop_length=hop_length)
+                mfcc = mfcc.T  # transpose the matrix
 
-        mfcc = mfcc.T  # transpose the matrix  //                                 look why
-
-        if len(mfcc) == expected_num_mfcc_vectors_per_segment:
-            data["mfcc"].append(mfcc.tolist())
-            data["labels"].append(iterator - 1)  # i is the iterator of the first loop
-            print("{}, segment:{}".format(file_path.split('\\')[-1], segment))
+                if len(mfcc) == expected_num_mfcc_vectors_per_segment:
+                    data["mfcc"].append(mfcc.tolist())
+                    data["labels"].append(iterator - 1)
+                    print("{}, segment:{}".format(file_path.split('\\')[-1], segment))
