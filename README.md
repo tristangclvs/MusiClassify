@@ -34,7 +34,7 @@ The efficiency of the latest model in date can be displayed by this confusion ma
 
 <div align="center" >
   
-![Confusion Matrix](https://media.discordapp.net/attachments/806147253504573520/1091108161643102339/conf_mat_v12.png)
+![Confusion Matrix](https://media.discordapp.net/attachments/806147253504573520/1099279639395971122/model_15_conf.png?width=363&height=325)
   
 </div>
 
