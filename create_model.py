@@ -25,7 +25,7 @@ from confusion_matrix import plot_conf_mat
 
 
 # ======================================
-def test_range(model, inputs_test, targets_test, nb_tests):
+def test_range(model, inputs_test, targets_test, nb_tests, data, random=random, predict=predict):
     correct_count = 0
     for i in range(nb_tests):
         # On va chercher les éléments à tester dans un jeu de données n'ayant pas été vu par le modèle lors de l'entraînement
@@ -43,7 +43,7 @@ def test_range(model, inputs_test, targets_test, nb_tests):
     print(f"Bonnes predictions : {(correct_count / nb_tests) * 100:.2f}%")
 
 
-def plot_loss_acc(history):
+def plot_loss_acc(history, plt=plt, sns=sns):
     """Plot training and (optionally) validation loss and accuracy"""
     # Setup plots
     # % matplotlib inline
@@ -88,7 +88,7 @@ def plot_loss_acc(history):
 
 
 # Load data from json file
-def load_data(data):
+def load_data(data, np=np):
     """
     Loads the data from the specified path and converts it into numpy arrays
     :param data: the data file
@@ -103,7 +103,7 @@ def load_data(data):
     return inputs, targets
 
 
-def prepare_datasets(inputs, targets, test_size, validation_size):
+def prepare_datasets(inputs, targets, test_size, validation_size, os=os, np=np):
     # Check if split_data folder exists and if the files are already created
     if os.path.exists("split_data"):
         print("Split data already exists")
@@ -142,7 +142,7 @@ def prepare_datasets(inputs, targets, test_size, validation_size):
     return inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test
 
 
-def build_model(input_shape, number_of_genres):
+def build_model(input_shape, number_of_genres, tf=tf):
     # Define the CNN model
     model = tf.keras.Sequential()
 
@@ -188,53 +188,57 @@ def build_model(input_shape, number_of_genres):
     return model
 
 
-DATA_PATH = "data.json"
-with open(DATA_PATH, "r") as fp:
-    data = json.load(fp)
+if __name__ == "__main__":
+    # BATCH_SIZE = 64
+    # epochs_nb = 30
 
-random.seed()
+    DATA_PATH = "data.json"
+    with open(DATA_PATH, "r") as fp:
+        data = json.load(fp)
 
-# create train, validation and test sets
-inputs, targets = load_data(data)
+    random.seed()
 
-print("\nData successfully loaded!\n")
+    # create train, validation and test sets
+    inputs, targets = load_data(data)
 
-inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
-    inputs, targets, 0.1, 0.2)
+    print("\nData successfully loaded!\n")
 
-# build the CNN net
-input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
+    inputs_train, inputs_validation, inputs_test, targets_train, targets_validation, targets_test = prepare_datasets(
+        inputs, targets, 0.1, 0.2)
 
-# print(input_shape)
-number_of_genres = 10
-model = build_model(input_shape, number_of_genres)
-model.summary()
+    # build the CNN net
+    input_shape = (inputs_train.shape[1], inputs_train.shape[2], inputs_train.shape[3])
 
-# compile the network
-model.compile(loss='sparse_categorical_crossentropy',
-              optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-              metrics=['accuracy'])
+    # print(input_shape)
+    number_of_genres = 10
+    model = build_model(input_shape, number_of_genres)
+    model.summary()
 
-# create the EarlyStopping callback
-early_stopping = EarlyStopping(
-    monitor='val_loss',  # monitor the validation loss
-    patience=10,  # stop after 3 epochs of no improvement
-    restore_best_weights=True  # restore the weights from the best epoch
-)
+    # compile the network
+    model.compile(loss='sparse_categorical_crossentropy',
+                  optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+                  metrics=['accuracy'])
 
-# train the CNN
-print("Training the model... This may take a while...")
-history = model.fit(inputs_train, targets_train,
-                    validation_data=(inputs_validation, targets_validation),
-                    batch_size=BATCH_SIZE,
-                    epochs=epochs_nb,
-                    callbacks=[early_stopping])
+    # create the EarlyStopping callback
+    early_stopping = EarlyStopping(
+        monitor='val_loss',  # monitor the validation loss
+        patience=10,  # stop after 3 epochs of no improvement
+        restore_best_weights=True  # restore the weights from the best epoch
+    )
 
-# plot accuracy and error over the epochs
-plot_loss_acc(history)
+    # train the CNN
+    print("Training the model... This may take a while...")
+    history = model.fit(inputs_train, targets_train,
+                        validation_data=(inputs_validation, targets_validation),
+                        batch_size=BATCH_SIZE,
+                        epochs=epochs_nb,
+                        callbacks=[early_stopping])
 
-# evaluate the CNN on a sample
-test_range(model, inputs_test=inputs_test, targets_test=targets_test, nb_tests=20)
+    # plot accuracy and error over the epochs
+    plot_loss_acc(history)
 
-# plot the confusion matrix
-plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
+    # evaluate the CNN on a sample
+    test_range(model, inputs_test=inputs_test, targets_test=targets_test, nb_tests=20, data=data)
+
+    # plot the confusion matrix
+    plot_conf_mat(model, inputs_test, targets_test, colormap=plt.cm.Greens)
