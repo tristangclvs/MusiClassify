@@ -137,7 +137,6 @@ inputs, targets = load_data(data)
 stock = []
 predictions = []
 final_predictions = []
-final_predictions2 = []
 for i in range(len(inputs)):
     X = inputs[i]
     predicted_index, prediction = predict(reconstructed_model, X, expected_genre, data)
