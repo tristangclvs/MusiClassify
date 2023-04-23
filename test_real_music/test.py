@@ -53,6 +53,10 @@ print("Chosen CNN model: {0}".format(CNN_MODEL))
 # Convert all files in inputs folder to wav ======================================
 if input('Convert all files to wav ? (y/n) ') == 'y':
     print("\nConverting files... (this may take a while)\n")
+    if not os.path.exists(outputs_folder_path):
+        os.mkdir(outputs_folder_path)
+    if  not os.path.exists(inputs_folder_path):
+        os.mkdir(inputs_folder_path)
     for i, (dirpath, dirnames, filenames) in enumerate(os.walk(inputs_folder_path)):
         for file in filenames:
             if "{0}.wav".format(file.split('.')[0]) not in os.listdir(outputs_folder_path):
