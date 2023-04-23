@@ -33,7 +33,7 @@ sr = 22500
 
 # def most_common(lst):
 #     return max(set(lst), key=lst.count)
-
+# Équivalent de:
 most_common = lambda lst: max(set(lst), key=lst.count)
 
 

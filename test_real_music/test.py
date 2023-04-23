@@ -6,14 +6,7 @@ import json
 
 import sys
 
-# import from parent directory
-from mfcc_extraction import file_mfcc
-from audio_converters import audio_to_wav
-from create_model import predict, load_data
-from utils import most_common
 
-import numpy as np
-from tensorflow import keras
 
 # ===== End imports =======
 
@@ -28,7 +21,14 @@ parent = os.path.dirname(current)
 # adding the parent directory to
 # the sys.path.
 sys.path.append(parent)
+# import from parent directory
+from mfcc_extraction import file_mfcc
+from audio_converters import audio_to_wav
+from create_model import predict, load_data
+from utils import most_common
 
+import numpy as np
+from tensorflow import keras
 # ======================================
 
 inputs_folder = "inputs"
@@ -37,9 +37,9 @@ output_file = "test.wav"
 expected_genre = "Not given"
 
 # Change the working directory to work in the project folder (needed for Pycharm)
-print(os.getcwd())
-os.chdir("../")
-print(os.getcwd())
+if input("Are you in PyCharm ? (y/n)") == "y": # if you are in PyCharm
+         os.chdir("../")
+
 inputs_folder_path = os.path.join(os.getcwd(), inputs_folder)
 outputs_folder_path = os.path.join(os.getcwd(), outputs_folder)
 
@@ -96,7 +96,8 @@ num_samples_per_segment = int(samples_per_track / num_segments)
 expected_num_mfcc_vectors_per_segment = math.ceil(
     num_samples_per_segment / hop_length)
 
-reconstructed_model = keras.models.load_model(os.path.join(os.getcwd(), "cnn_model", CNN_MODEL))
+reconstructed_model = keras.models.load_model(
+    os.path.join(os.getcwd(), "cnn_model", CNN_MODEL))
 
 data = {
     "mapping": [
@@ -137,16 +138,17 @@ inputs, targets = load_data(data)
 stock = []
 predictions = []
 final_predictions = []
-final_predictions2 = []
 for i in range(len(inputs)):
     X = inputs[i]
-    predicted_index, prediction = predict(reconstructed_model, X, expected_genre, data)
+    predicted_index, prediction = predict(
+        reconstructed_model, X, expected_genre, data)
     predictions.append(100 * np.array(prediction[0]))
     stock.append(predicted_index[0])
 
 final_predictions.append(np.mean(predictions, axis=0))
 print(" ============ ", end="\n\n")
 
-print("Predicted music genre is `{}`.".format(data["mapping"][most_common(stock)]), end="\n\n")
+print("Predicted music genre is `{}`.".format(
+    data["mapping"][most_common(stock)]), end="\n\n")
 
 print(" ============ ", end="\n\n")
